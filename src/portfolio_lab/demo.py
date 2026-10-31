@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import random
 
-from .allocate import greedy_allocation, uniform_allocation
+from .allocate import greedy_allocation, lp_relaxation_allocation, uniform_allocation
 from .metrics import run_experiment
 from .simulate import generate_candidates
 
@@ -24,11 +24,15 @@ def main() -> None:
     candidates = generate_candidates(N_WORKFLOWS, random.Random(SEED))
     uniform = uniform_allocation(N_WORKFLOWS, BUDGET)
     greedy = greedy_allocation(candidates, BUDGET)
+    lp_stub = lp_relaxation_allocation(candidates, BUDGET)
     uniform_result = run_experiment(
         candidates, uniform, skill=SKILL, n_tasks=N_TASKS, seed=SEED
     )
     greedy_result = run_experiment(
         candidates, greedy, skill=SKILL, n_tasks=N_TASKS, seed=SEED
+    )
+    lp_result = run_experiment(
+        candidates, lp_stub, skill=SKILL, n_tasks=N_TASKS, seed=SEED
     )
 
     print(
@@ -38,7 +42,7 @@ def main() -> None:
     print("candidates (expected accuracy):")
     for c in candidates:
         print(f"  {c.name}: {c.expected_accuracy():.3f}")
-    print(f"allocations: uniform={uniform}  greedy={greedy}")
+    print(f"allocations: uniform={uniform}  greedy={greedy}  lp-stub={lp_stub}")
     print()
     print(f"{'strategy':<28}{'accuracy':>9}{'odds-lift':>11}")
     print(f"{'best single (expected)':<28}{greedy_result.best_single:>9.4f}{'—':>11}")
@@ -49,6 +53,10 @@ def main() -> None:
     print(
         f"{'portfolio + selector (greedy)':<28}"
         f"{greedy_result.portfolio_accuracy:>9.4f}{greedy_result.lift:>11.2f}"
+    )
+    print(
+        f"{'portfolio + selector (LP stub)':<28}"
+        f"{lp_result.portfolio_accuracy:>9.4f}{lp_result.lift:>11.2f}"
     )
     print(
         f"{'oracle (greedy runs)':<28}{greedy_result.oracle_accuracy:>9.4f}{'—':>11}"

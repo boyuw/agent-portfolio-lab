@@ -37,10 +37,13 @@ better than chance; allocation of a fixed compute budget matters.
 
 - **No real tasks or models.** Correctness is Bernoulli with known
   probabilities; nothing here measures any actual workflow or benchmark.
-- **No LP relaxation, no randomized rounding, no pricing oracle.** The
-  paper allocates budget via a linear program over workflows and uses a
-  dual/pricing argument to propose new candidates. Greedy marginal-gain
-  is a heuristic stand-in chosen for readability.
+- **LP relaxation is a stub, not a solver.** `fractional_allocation`
+  greedily maximises the continuous relaxation of the greedy objective
+  in small fractional steps, and `lp_relaxation_allocation` rounds it
+  by largest remainder. There is still no linear program, no randomized
+  rounding, and no dual/pricing oracle proposing new candidates — the
+  stub exists to show what a fractional solution looks like next to the
+  integer greedy one, not to reproduce the paper's method.
 - **Selector skill is a reduced-form parameter.** The paper models
   selection from observed scores; here `skill` collapses signal quality
   and judge quality into one number, and the within-task signal model is
