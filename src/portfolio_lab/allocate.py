@@ -138,3 +138,63 @@ def greedy_allocation(candidates: list[Candidate], budget: int) -> list[int]:
                 best_index, best_gain = i, gain
         allocation[best_index] += 1
     return allocation
+
+
+def allocation_cost(allocation: list[int], costs: list[float]) -> float:
+    """Total cost of an allocation: ``sum(count_i * cost_i)``."""
+    if len(allocation) != len(costs):
+        raise ValueError(
+            f"costs has length {len(costs)}, expected {len(allocation)}"
+        )
+    return sum(count * cost for count, cost in zip(allocation, costs))
+
+
+def greedy_cost_allocation(
+    candidates: list[Candidate], costs: list[float], cost_budget: float
+) -> list[int]:
+    """Greedy marginal-gain allocation under a total *cost* budget.
+
+    The run-count greedy (:func:`greedy_allocation`) assumes every run
+    costs the same. Here workflow ``i`` costs ``costs[i]`` per run, so
+    each step buys the affordable workflow with the largest marginal
+    gain *per unit cost* — the average failure-probability reduction
+    divided by that workflow's price — and stops when nothing is
+    affordable anymore. The result's total cost never exceeds
+    ``cost_budget``; the leftover (less than the cheapest workflow's
+    price) is unspent, exactly as an unspent run-count remainder would be.
+
+    With equal costs this reduces to :func:`greedy_allocation` with a
+    run budget of ``cost_budget / cost`` (tested). Costs must be
+    strictly positive: a zero-cost workflow would be bought infinitely,
+    and a negative cost is meaningless.
+    """
+    if not candidates:
+        raise ValueError("need at least one workflow")
+    if len(costs) != len(candidates):
+        raise ValueError(
+            f"costs has length {len(costs)}, expected {len(candidates)}"
+        )
+    if any(cost <= 0.0 for cost in costs):
+        raise ValueError("costs must be strictly positive")
+    if cost_budget < 0.0:
+        raise ValueError("cost budget must be non-negative")
+    n_types = candidates[0].n_types
+    allocation = [0] * len(candidates)
+    remaining = float(cost_budget)
+    while True:
+        best_index, best_gain_per_cost = -1, 0.0
+        for i, candidate in enumerate(candidates):
+            if costs[i] > remaining:
+                continue
+            gain = sum(
+                _failure_prob(candidates, allocation, t) * candidate.success_prob(t)
+                for t in range(n_types)
+            ) / n_types
+            gain_per_cost = gain / costs[i]
+            if gain_per_cost > best_gain_per_cost:
+                best_index, best_gain_per_cost = i, gain_per_cost
+        if best_index < 0:
+            break
+        allocation[best_index] += 1
+        remaining -= costs[best_index]
+    return allocation

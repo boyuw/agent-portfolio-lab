@@ -48,9 +48,11 @@ better than chance; allocation of a fixed compute budget matters.
   selection from observed scores; here `skill` collapses signal quality
   and judge quality into one number, and the within-task signal model is
   a single Gaussian.
-- **Independent runs, uniform task types, fixed budget per task.** No
-  cost heterogeneity across workflows, no sequential/adaptive budgets,
-  no correlation between workflows' errors beyond shared task type.
+- **Independent runs, uniform task types.** No sequential/adaptive
+  budgets, no correlation between workflows' errors beyond shared task
+  type. Budgets used to be run counts only; `greedy_cost_allocation`
+  now buys gain per unit cost under a total cost budget, and reduces to
+  run-count greedy when all prices are equal (tested).
 - **Odds-lift baseline is explicit.** The lift here is relative to
   picking a run uniformly at random from the same run sets; the paper's
   index is defined against its own chance model. Same spirit, stated
@@ -58,6 +60,6 @@ better than chance; allocation of a fixed compute budget matters.
 
 ## What would change first in a v2
 
-Cost-weighted budgets (workflows with different prices), correlated
-errors, and an adaptive selector whose skill is estimated from held-out
-signals instead of assumed.
+Correlated errors, and an adaptive selector whose skill is estimated
+from held-out signals instead of assumed. (Cost-weighted budgets landed
+2026-11-02: `greedy_cost_allocation` in `allocate.py`, demo row included.)
