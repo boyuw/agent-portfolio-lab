@@ -55,8 +55,13 @@ def run_experiment(
     skill: float,
     n_tasks: int,
     seed: int,
+    rho: float = 0.0,
 ) -> ExperimentResult:
-    """Simulate n_tasks tasks under one allocation and selector skill."""
+    """Simulate n_tasks tasks under one allocation and selector skill.
+
+    rho is the common-shock correlation between runs on the same task
+    (see simulate.run_once); rho = 0 is the independent-runs default.
+    """
     rng = random.Random(seed)
     n_types = candidates[0].n_types
     selected_correct = 0
@@ -65,7 +70,7 @@ def run_experiment(
     runs_total = 0
     for _ in range(n_tasks):
         task = generate_task(rng, n_types)
-        runs = run_portfolio(candidates, allocation, task, rng)
+        runs = run_portfolio(candidates, allocation, task, rng, rho=rho)
         chosen = select_run(runs, skill, rng)
         selected_correct += chosen.correct
         oracle_correct += any_correct(runs)

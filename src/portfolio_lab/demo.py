@@ -84,6 +84,18 @@ def main() -> None:
     print(
         f"{'oracle (greedy runs)':<28}{greedy_result.oracle_accuracy:>9.4f}{'—':>11}"
     )
+    print()
+    print("correlation sweep (greedy allocation): a common shock per task")
+    print("makes workflow errors correlate, which erodes the portfolio.")
+    print(f"{'rho':<28}{'accuracy':>9}{'oracle':>9}{'odds-lift':>11}")
+    for rho in (0.0, 0.5, 0.9):
+        result = run_experiment(
+            candidates, greedy, skill=SKILL, n_tasks=N_TASKS, seed=SEED, rho=rho
+        )
+        print(
+            f"{f'rho={rho}':<28}{result.portfolio_accuracy:>9.4f}"
+            f"{result.oracle_accuracy:>9.4f}{result.lift:>11.2f}"
+        )
 
 
 if __name__ == "__main__":

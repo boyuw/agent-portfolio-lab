@@ -48,9 +48,19 @@ better than chance; allocation of a fixed compute budget matters.
   selection from observed scores; here `skill` collapses signal quality
   and judge quality into one number, and the within-task signal model is
   a single Gaussian.
-- **Independent runs, uniform task types.** No sequential/adaptive
-  budgets, no correlation between workflows' errors beyond shared task
-  type. Budgets used to be run counts only; `greedy_cost_allocation`
+- **Independent runs, uniform task types — unless rho > 0.** No
+  sequential/adaptive budgets, no correlation between workflows'
+  errors beyond shared task type, in the default mode. The correlated
+  mode (`rho` in `run_once` / `run_portfolio` / `run_experiment`) adds
+  one Gaussian common shock per task through a copula: correctness is
+  z < Phi^-1(p) with z = sqrt(1-rho)*eps + sqrt(rho)*shock. Marginals
+  are preserved (each workflow is still right with probability p) but
+  runs on the same task are positively correlated, so the oracle
+  ceiling collapses from ~1 toward E[max p(type)] as rho -> 1 — at
+  rho = 1 the oracle is correct exactly when the shock is below the
+  best workflow's threshold on that task type, and the demo sweep
+  (rho = 0 / 0.5 / 0.9) shows the lift eroding 8.87 -> 5.37 -> 2.61.
+  Budgets used to be run counts only; `greedy_cost_allocation`
   now buys gain per unit cost under a total cost budget, and reduces to
   run-count greedy when all prices are equal (tested).
 - **Odds-lift baseline is explicit.** The lift here is relative to
@@ -60,6 +70,8 @@ better than chance; allocation of a fixed compute budget matters.
 
 ## What would change first in a v2
 
-Correlated errors, and an adaptive selector whose skill is estimated
-from held-out signals instead of assumed. (Cost-weighted budgets landed
-2026-11-02: `greedy_cost_allocation` in `allocate.py`, demo row included.)
+An adaptive selector whose skill is estimated from held-out signals
+instead of assumed. (Correlated errors landed 2026-11-05: the common-
+shock copula in `simulate.py`, demo sweep included. Cost-weighted
+budgets landed 2026-11-02: `greedy_cost_allocation` in `allocate.py`,
+demo row included.)

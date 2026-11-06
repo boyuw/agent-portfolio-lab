@@ -9,8 +9,13 @@ benchmark behaviour — see docs/DESIGN.md.
 
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass
+from statistics import NormalDist
+
+# Standard normal quantiles, for the correlated-errors latent model below.
+_NORM = NormalDist()
 
 
 @dataclass(frozen=True)
@@ -73,9 +78,32 @@ def run_once(
     task: Task,
     rng: random.Random,
     signal_noise: float = 0.4,
+    rho: float = 0.0,
+    shock: float = 0.0,
 ) -> RunResult:
-    """Run one workflow on one task: Bernoulli correctness + noisy signal."""
-    correct = rng.random() < candidate.success_prob(task.task_type)
+    """Run one workflow on one task: Bernoulli correctness + noisy signal.
+
+    With rho = 0 (the default) correctness is an independent Bernoulli
+    draw at the workflow's success probability, exactly as before.
+    With rho in (0, 1] the task carries a common shock shared by every
+    run on it, and correctness comes from a Gaussian copula: the latent
+    draw is z = sqrt(1 - rho) * eps + sqrt(rho) * shock with eps, shock
+    standard normal, and the run is correct iff z < Phi^-1(p). The
+    marginal P(correct) is still p for every workflow, but runs on the
+    same task are now positively correlated — a hard task (large shock)
+    drags every workflow down at once. At rho = 1 correctness is nested
+    by success probability: if a low-p workflow is correct on a task,
+    every higher-p workflow is correct too. `shock` is drawn once per
+    task by run_portfolio; passing it here keeps run_once testable.
+    """
+    if not 0.0 <= rho <= 1.0:
+        raise ValueError("rho must be in [0, 1]")
+    p = candidate.success_prob(task.task_type)
+    if rho == 0.0:
+        correct = rng.random() < p
+    else:
+        z = math.sqrt(1.0 - rho) * rng.gauss(0.0, 1.0) + math.sqrt(rho) * shock
+        correct = z < _NORM.inv_cdf(p)
     signal = (1.0 if correct else 0.0) + rng.gauss(0.0, signal_noise)
     return RunResult(candidate_index=candidate_index, correct=correct, signal=signal)
 
@@ -85,10 +113,19 @@ def run_portfolio(
     allocation: list[int],
     task: Task,
     rng: random.Random,
+    rho: float = 0.0,
 ) -> list[RunResult]:
-    """Run each candidate `allocation[i]` times on the task; return all runs."""
+    """Run each candidate `allocation[i]` times on the task; return all runs.
+
+    With rho > 0 a single common shock is drawn for the task and shared
+    by every run on it (see run_once); with rho = 0 the runs are
+    independent, as before.
+    """
+    if not 0.0 <= rho <= 1.0:
+        raise ValueError("rho must be in [0, 1]")
+    shock = rng.gauss(0.0, 1.0) if rho > 0.0 else 0.0
     results: list[RunResult] = []
     for idx, (candidate, count) in enumerate(zip(candidates, allocation)):
         for _ in range(count):
-            results.append(run_once(idx, candidate, task, rng))
+            results.append(run_once(idx, candidate, task, rng, rho=rho, shock=shock))
     return results
