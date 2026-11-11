@@ -96,6 +96,26 @@ def main() -> None:
             f"{f'rho={rho}':<28}{result.portfolio_accuracy:>9.4f}"
             f"{result.oracle_accuracy:>9.4f}{result.lift:>11.2f}"
         )
+    print()
+    print("miscalibration sweep (greedy allocation): the selector claims")
+    print(f"skill {SKILL} but behaves with skill {SKILL} * (1 - overconfidence).")
+    print("Overstated confidence erodes the lift toward 1 (pure chance).")
+    print(f"{'overconfidence':<28}{'accuracy':>9}{'eff. skill':>11}{'odds-lift':>11}")
+    for overconfidence in (0.0, 0.25, 0.5, 0.75, 1.0):
+        result = run_experiment(
+            candidates,
+            greedy,
+            skill=SKILL,
+            n_tasks=N_TASKS,
+            seed=SEED,
+            overconfidence=overconfidence,
+        )
+        print(
+            f"{f'overconfidence={overconfidence}':<28}"
+            f"{result.portfolio_accuracy:>9.4f}"
+            f"{SKILL * (1.0 - overconfidence):>11.2f}"
+            f"{result.lift:>11.2f}"
+        )
 
 
 if __name__ == "__main__":

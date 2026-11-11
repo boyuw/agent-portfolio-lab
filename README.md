@@ -78,6 +78,11 @@ contribution from the allocation's.
   common shock, the oracle ceiling falls and there is less for the
   selector to extract: the demo's rho sweep drops the greedy lift from
   8.87 (rho = 0) to 2.61 (rho = 0.9).
+- **Overconfidence deflates the lift too.** A selector that claims
+  skill 0.8 but behaves with `0.8 * (1 - overconfidence)` loses lift
+  fast: the demo's miscalibration sweep drops the greedy lift from
+  8.87 (honest) to 2.14 (overconfidence 0.5) to 0.90 (overconfidence
+  1.0, i.e. pure chance despite the claim).
 
 ## Layout
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 
-from .selector import any_correct, select_run
+from .selector import any_correct, effective_skill, select_run
 from .simulate import Candidate, generate_task, run_portfolio
 
 
@@ -56,13 +56,18 @@ def run_experiment(
     n_tasks: int,
     seed: int,
     rho: float = 0.0,
+    overconfidence: float = 0.0,
 ) -> ExperimentResult:
     """Simulate n_tasks tasks under one allocation and selector skill.
 
     rho is the common-shock correlation between runs on the same task
     (see simulate.run_once); rho = 0 is the independent-runs default.
+    overconfidence is the fraction of the claimed skill that is
+    illusory (see selector.effective_skill); 0 is the honest default,
+    and the selector then behaves with the claimed skill exactly.
     """
     rng = random.Random(seed)
+    effective = effective_skill(skill, overconfidence)
     n_types = candidates[0].n_types
     selected_correct = 0
     oracle_correct = 0
@@ -71,7 +76,7 @@ def run_experiment(
     for _ in range(n_tasks):
         task = generate_task(rng, n_types)
         runs = run_portfolio(candidates, allocation, task, rng, rho=rho)
-        chosen = select_run(runs, skill, rng)
+        chosen = select_run(runs, effective, rng)
         selected_correct += chosen.correct
         oracle_correct += any_correct(runs)
         runs_correct += sum(r.correct for r in runs)

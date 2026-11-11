@@ -15,6 +15,24 @@ import random
 from .simulate import RunResult
 
 
+def effective_skill(claimed_skill: float, overconfidence: float) -> float:
+    """Effective selector skill when confidence systematically overstates it.
+
+    The selector reports `claimed_skill` but behaves as if its skill
+    were lower: `claimed_skill * (1 - overconfidence)`. Overconfidence
+    is the fraction of the claimed skill that is illusory — 0 means the
+    claim is honest (the behaviour is unchanged), 1 means the selector
+    is pure chance no matter what it claims. A claimed skill of 0 stays
+    0: an honest chance-level selector cannot be overconfident about
+    being better than chance.
+    """
+    if not 0.0 <= claimed_skill <= 1.0:
+        raise ValueError("claimed_skill must be in [0, 1]")
+    if not 0.0 <= overconfidence <= 1.0:
+        raise ValueError("overconfidence must be in [0, 1]")
+    return claimed_skill * (1.0 - overconfidence)
+
+
 def select_run(runs: list[RunResult], skill: float, rng: random.Random) -> RunResult:
     """Pick the final answer among runs, imperfectly (see module docstring)."""
     if not runs:

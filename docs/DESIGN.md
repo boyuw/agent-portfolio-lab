@@ -47,7 +47,13 @@ better than chance; allocation of a fixed compute budget matters.
 - **Selector skill is a reduced-form parameter.** The paper models
   selection from observed scores; here `skill` collapses signal quality
   and judge quality into one number, and the within-task signal model is
-  a single Gaussian.
+  a single Gaussian. The miscalibration mode (`overconfidence` in
+  `run_experiment`) keeps that reduction: the selector claims `skill`
+  but behaves with `skill * (1 - overconfidence)`, so overstated
+  confidence is a scaled-down skill, not a different mechanism. The
+  demo sweep (claimed skill 0.8) shows the lift eroding 8.87 -> 2.14
+  -> 0.90 as overconfidence goes 0 -> 0.5 -> 1.0, i.e. a fully
+  overconfident selector is pure chance by construction.
 - **Independent runs, uniform task types — unless rho > 0.** No
   sequential/adaptive budgets, no correlation between workflows'
   errors beyond shared task type, in the default mode. The correlated
