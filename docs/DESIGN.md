@@ -77,7 +77,18 @@ better than chance; allocation of a fixed compute budget matters.
 ## What would change first in a v2
 
 An adaptive selector whose skill is estimated from held-out signals
-instead of assumed. (Correlated errors landed 2026-11-05: the common-
+instead of assumed — landed 2026-11-12: `estimate_skill` in
+`selector.py` is the method-of-moments ratio (pick accuracy − chance
+accuracy) / (max-signal accuracy − chance accuracy) on held-out tasks
+(`collect_observations`), clamped to [0, 1], and 0.0 when the max-signal
+pick is no better than chance (skill unidentified). On the demo's
+held-out tasks (2000 tasks, seed 1007) it recovers 0.79 against the
+assumed 0.80, and the experiment at the estimated skill gives lift
+8.33 vs 8.87 at the assumed skill. The estimator is only as good as
+the held-out set: it assumes the held-out tasks come from the same
+distribution as deployment, and it says nothing about *why* the
+selector is at that skill — miscalibration (see above) is still a
+separate mechanism. (Correlated errors landed 2026-11-05: the common-
 shock copula in `simulate.py`, demo sweep included. Cost-weighted
 budgets landed 2026-11-02: `greedy_cost_allocation` in `allocate.py`,
 demo row included.)

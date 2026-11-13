@@ -17,6 +17,7 @@ from .allocate import (
     uniform_allocation,
 )
 from .metrics import run_experiment
+from .selector import collect_observations, estimate_skill
 from .simulate import generate_candidates
 
 SEED = 7
@@ -116,6 +117,31 @@ def main() -> None:
             f"{SKILL * (1.0 - overconfidence):>11.2f}"
             f"{result.lift:>11.2f}"
         )
+    print()
+    print("adaptive selector (greedy allocation): the skill is estimated")
+    print("from held-out tasks instead of assumed. The estimate is the")
+    print("method-of-moments ratio (pick accuracy - chance accuracy) /")
+    print("(max-signal accuracy - chance accuracy) on fresh tasks.")
+    observations = collect_observations(
+        candidates, greedy, skill=SKILL, n_tasks=N_TASKS, seed=SEED + 1000
+    )
+    estimated = estimate_skill(observations)
+    estimated_result = run_experiment(
+        candidates, greedy, skill=estimated, n_tasks=N_TASKS, seed=SEED
+    )
+    print(
+        f"assumed skill={SKILL:.2f}  estimated skill={estimated:.2f} "
+        f"(held-out tasks={N_TASKS}, seed={SEED + 1000})"
+    )
+    print(f"{'strategy':<28}{'accuracy':>9}{'odds-lift':>11}")
+    print(
+        f"{'portfolio + selector (assumed)':<28}"
+        f"{greedy_result.portfolio_accuracy:>9.4f}{greedy_result.lift:>11.2f}"
+    )
+    print(
+        f"{'portfolio + selector (estimated)':<28}"
+        f"{estimated_result.portfolio_accuracy:>9.4f}{estimated_result.lift:>11.2f}"
+    )
 
 
 if __name__ == "__main__":

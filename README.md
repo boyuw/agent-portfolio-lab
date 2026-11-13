@@ -83,13 +83,21 @@ contribution from the allocation's.
   fast: the demo's miscalibration sweep drops the greedy lift from
   8.87 (honest) to 2.14 (overconfidence 0.5) to 0.90 (overconfidence
   1.0, i.e. pure chance despite the claim).
+- **Skill can be estimated, not just assumed.** `estimate_skill` in
+  `selector.py` recovers the selector's skill from held-out tasks
+  where the pick can be scored: (pick accuracy − chance accuracy) /
+  (max-signal accuracy − chance accuracy). On the demo's held-out
+  tasks it estimates 0.79 against the assumed 0.80, and running the
+  experiment at the estimated skill gives lift 8.33 instead of 8.87 —
+  the gap is the price of not knowing the skill in advance.
 
 ## Layout
 
 ```
 src/portfolio_lab/
   simulate.py   synthetic task types, candidates, noisy run signals
-  selector.py   the imperfect selector (skill = P(reads signals))
+  selector.py   the imperfect selector (skill = P(reads signals)),
+                plus skill estimation from held-out picks
   allocate.py   uniform and greedy budget allocation (both sum to B)
   metrics.py    best-single / portfolio / oracle accuracy, odds-lift
   demo.py       python -m portfolio_lab.demo
