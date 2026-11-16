@@ -105,6 +105,10 @@ tests/          pytest: lift ≈ 1 at chance, > 1 when skilled,
                 portfolio ≥ best single, allocations sum to B, seeded
                 determinism
 docs/DESIGN.md  design decisions and deliberate simplifications
+docs/WORKED_EXAMPLE.md  a 3-workflow configuration worked by hand
+                (best single, chance, oracle, greedy steps, selector
+                mixture) — every number asserted in
+                tests/test_worked_example.py
 ```
 
 ## License
