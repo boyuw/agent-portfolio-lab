@@ -7,6 +7,7 @@ is the ceiling any selector could reach on them.
 
 from __future__ import annotations
 
+import argparse
 import random
 
 from .allocate import (
@@ -15,6 +16,13 @@ from .allocate import (
     greedy_cost_allocation,
     lp_relaxation_allocation,
     uniform_allocation,
+)
+from .export import (
+    STRATEGY_COLUMNS,
+    rows_to_csv,
+    rows_to_json,
+    rows_to_markdown,
+    strategy_rows,
 )
 from .metrics import run_experiment
 from .selector import collect_observations, estimate_skill
@@ -31,7 +39,28 @@ COSTS = [1.0, 3.0, 2.0, 1.0, 4.0]
 COST_BUDGET = 24.0
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        prog="python -m portfolio_lab.demo",
+        description="Best single workflow vs portfolio + imperfect selector.",
+    )
+    parser.add_argument(
+        "--export-csv",
+        metavar="PATH",
+        help="write the strategy results table to PATH as CSV",
+    )
+    parser.add_argument(
+        "--export-json",
+        metavar="PATH",
+        help="write the strategy results table to PATH as JSON",
+    )
+    parser.add_argument(
+        "--export-md",
+        metavar="PATH",
+        help="write the strategy results table to PATH as a Markdown table",
+    )
+    args = parser.parse_args(argv)
+
     candidates = generate_candidates(N_WORKFLOWS, random.Random(SEED))
     uniform = uniform_allocation(N_WORKFLOWS, BUDGET)
     greedy = greedy_allocation(candidates, BUDGET)
@@ -86,6 +115,29 @@ def main() -> None:
         f"{'oracle (greedy runs)':<28}{greedy_result.oracle_accuracy:>9.4f}{'—':>11}"
     )
     print()
+    if args.export_csv or args.export_json or args.export_md:
+        rows = strategy_rows(
+            greedy_result.best_single,
+            {
+                "portfolio + selector (uniform)": uniform_result,
+                "portfolio + selector (greedy)": greedy_result,
+                "portfolio + selector (LP stub)": lp_result,
+                "portfolio + selector (cost)": cost_result,
+            },
+            greedy_result.oracle_accuracy,
+        )
+        if args.export_csv:
+            with open(args.export_csv, "w", encoding="utf-8") as f:
+                f.write(rows_to_csv(rows, STRATEGY_COLUMNS))
+            print(f"wrote {args.export_csv}")
+        if args.export_json:
+            with open(args.export_json, "w", encoding="utf-8") as f:
+                f.write(rows_to_json(rows, STRATEGY_COLUMNS))
+            print(f"wrote {args.export_json}")
+        if args.export_md:
+            with open(args.export_md, "w", encoding="utf-8") as f:
+                f.write(rows_to_markdown(rows, STRATEGY_COLUMNS))
+            print(f"wrote {args.export_md}")
     print("correlation sweep (greedy allocation): a common shock per task")
     print("makes workflow errors correlate, which erodes the portfolio.")
     print(f"{'rho':<28}{'accuracy':>9}{'oracle':>9}{'odds-lift':>11}")

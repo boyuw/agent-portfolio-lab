@@ -91,6 +91,33 @@ contribution from the allocation's.
   experiment at the estimated skill gives lift 8.33 instead of 8.87 —
   the gap is the price of not knowing the skill in advance.
 
+## Exporting the results table
+
+The demo's strategy table can be written out for reuse — as CSV,
+JSON, or a Markdown table ready to paste into a README — with the
+`--export-csv`, `--export-json`, and `--export-md` flags:
+
+```bash
+PYTHONPATH=src python -m portfolio_lab.demo --export-md results.md
+```
+
+The table below is the demo's own output at seed 7 (regenerated
+from the demo, not hand-copied):
+
+| strategy | accuracy | oracle | chance | odds-lift |
+| --- | --- | --- | --- | --- |
+| best single (expected) | 0.5382 | — | — | — |
+| portfolio + selector (uniform) | 0.8915 | 0.9985 | 0.4727 | 9.17 |
+| portfolio + selector (greedy) | 0.9010 | 0.9995 | 0.5064 | 8.87 |
+| portfolio + selector (LP stub) | 0.8960 | 1.0000 | 0.5003 | 8.61 |
+| portfolio + selector (cost) | 0.8885 | 1.0000 | 0.4704 | 8.97 |
+| oracle (greedy runs) | 0.9995 | — | — | — |
+
+`export.py` also builds the correlation and miscalibration sweep
+tables (`correlation_rows`, `miscalibration_rows`) for the same
+serializers. Missing values are blank in CSV, `null` in JSON, and
+`—` in Markdown.
+
 ## Layout
 
 ```
@@ -100,6 +127,8 @@ src/portfolio_lab/
                 plus skill estimation from held-out picks
   allocate.py   uniform and greedy budget allocation (both sum to B)
   metrics.py    best-single / portfolio / oracle accuracy, odds-lift
+  export.py     results tables as CSV / JSON / Markdown (strategy,
+                correlation, and miscalibration tables)
   demo.py       python -m portfolio_lab.demo
 tests/          pytest: lift ≈ 1 at chance, > 1 when skilled,
                 portfolio ≥ best single, allocations sum to B, seeded

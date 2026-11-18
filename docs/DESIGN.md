@@ -73,6 +73,13 @@ better than chance; allocation of a fixed compute budget matters.
   picking a run uniformly at random from the same run sets; the paper's
   index is defined against its own chance model. Same spirit, stated
   baseline, not the identical quantity.
+- **Exports are views of the same results, not new numbers.**
+  `export.py` serializes the `ExperimentResult` objects the demo
+  already computed (CSV / JSON / Markdown); the README table is the
+  demo's own `--export-md` output, so re-running the demo at seed 7
+  reproduces it exactly. Missing values (best single has no oracle,
+  chance, or lift) are blank in CSV, `null` in JSON, and `—` in
+  Markdown, matching the demo's printed tables.
 
 ## What would change first in a v2
 
