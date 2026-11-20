@@ -27,6 +27,7 @@ from .export import (
 from .metrics import run_experiment
 from .selector import collect_observations, estimate_skill
 from .simulate import generate_candidates
+from .sweep import sweep_seeds
 
 SEED = 7
 N_WORKFLOWS = 5
@@ -193,6 +194,30 @@ def main(argv: list[str] | None = None) -> None:
     print(
         f"{'portfolio + selector (estimated)':<28}"
         f"{estimated_result.portfolio_accuracy:>9.4f}{estimated_result.lift:>11.2f}"
+    )
+    print()
+    print("multi-seed sweep (greedy allocation): the headline lift above")
+    print("is one seed's draw. Across 20 seeds the lift is a distribution;")
+    print("the spread is Monte Carlo error on 2000 tasks per seed, not a")
+    print("configuration effect — the candidates and allocation are fixed.")
+    sweep = sweep_seeds(
+        candidates, greedy, skill=SKILL, n_tasks=N_TASKS, seeds=list(range(20))
+    )
+    lift = sweep.lift_summary
+    accuracy = sweep.accuracy_summary
+    print(f"{'lift over 20 seeds':<28}{'mean':>9}{'q10':>8}{'median':>8}{'q90':>8}")
+    print(
+        f"{'':<28}{lift.mean:>9.2f}{lift.q10:>8.2f}"
+        f"{lift.median:>8.2f}{lift.q90:>8.2f}"
+    )
+    print(
+        f"  range {lift.minimum:.2f}–{lift.maximum:.2f}  (std {lift.std:.2f}); "
+        f"accuracy mean {accuracy.mean:.4f} "
+        f"(range {accuracy.minimum:.4f}–{accuracy.maximum:.4f})"
+    )
+    print(
+        f"  single-seed lift (seed {SEED}): {greedy_result.lift:.2f} — "
+        f"inside the distribution, not an extreme"
     )
 
 

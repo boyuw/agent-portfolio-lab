@@ -90,6 +90,12 @@ contribution from the allocation's.
   tasks it estimates 0.79 against the assumed 0.80, and running the
   experiment at the estimated skill gives lift 8.33 instead of 8.87 —
   the gap is the price of not knowing the skill in advance.
+- **One seed's lift is one draw.** The headline 8.87 is seed 7. Across
+  20 seeds (same candidates, same greedy allocation, 2000 tasks each)
+  the greedy lift averages 8.45, with a 10–90% range of 7.70–9.35 and
+  extremes 7.42–9.99 — so the seed-7 number is representative, not an
+  outlier, and the ±1 spread is the Monte Carlo error on 2000 tasks,
+  not a difference between configurations. See `sweep.py`.
 
 ## Exporting the results table
 

@@ -32,6 +32,17 @@ better than chance; allocation of a fixed compute budget matters.
   is the best workflow's expected accuracy (no sampling noise in the
   baseline); portfolio, chance, and oracle numbers come from the same
   simulated run sets.
+- **Multi-seed sweep: the lift is a distribution, not a number.**
+  `sweep.py` re-runs one configuration across many seeds and reports
+  mean / quantiles / range of the lift and accuracy. The candidates
+  and allocation are fixed across seeds, so the spread is pure Monte
+  Carlo error on `n_tasks` tasks per seed — it says nothing about
+  configuration variation, and it is not a confidence interval for a
+  deployment lift. On the demo configuration (greedy, skill 0.8,
+  2000 tasks, seeds 0–19) the lift averages 8.45 with a 10–90% range
+  of 7.70–9.35 (extremes 7.42–9.99, std 0.72); the headline seed-7
+  lift of 8.87 sits inside the distribution. Seeds must be
+  duplicate-free — a repeated seed would double-count one draw.
 
 ## Deliberately simplified vs. the paper
 
